@@ -155,8 +155,8 @@ export function useOpenInApp(input: { session: MountedSession; path: () => strin
 
   const copyPath = (target = input.path()) => {
     if (!target) return
-    navigator.clipboard
-      .writeText(target)
+    ctx.system
+      .copy(target)
       .then(() => {
         showToast({
           variant: "success",

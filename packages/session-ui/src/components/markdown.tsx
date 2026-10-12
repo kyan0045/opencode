@@ -11,6 +11,7 @@ import {
   splitProps,
 } from "solid-js"
 import { isServer, render } from "solid-js/web"
+import { writeClipboard } from "@opencode/ui/clipboard"
 import { Icon } from "@opencode/ui/icon"
 import { IconButton } from "@opencode/ui/icon-button"
 import { Tooltip } from "@opencode/ui/tooltip"
@@ -478,10 +479,8 @@ function setupCodeCopy(root: HTMLDivElement, getLabels: () => CopyLabels) {
     const content = code?.textContent ?? ""
 
     if (!content) return
-    const clipboard = navigator?.clipboard
 
-    if (!clipboard) return
-    await clipboard.writeText(content)
+    if (!(await writeClipboard(content))) return
     const labels = getLabels()
     setCopyState(button, labels, true)
     const existing = timeouts.get(button)

@@ -34,6 +34,8 @@
   ],
   "exports": {
     "./package.json": "./package.json",
+    "./clipboard": "./src/clipboard.ts",
+    "./uuid": "./src/uuid.ts",
     "./accordion": "./src/data-display/accordion/accordion.tsx",
     "./avatar": "./src/data-display/avatar/avatar.tsx",
     "./badge": "./src/data-display/badge/badge.tsx",

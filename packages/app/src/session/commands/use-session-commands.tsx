@@ -1,5 +1,6 @@
 import { useCommand, type CommandOption } from "@/shell/commands/command"
 import { useDialog } from "@opencode/ui/context/dialog"
+import { writeClipboard } from "@opencode/ui/clipboard"
 import { previewSelectedLines } from "@opencode/session-ui/pierre/selection-bridge"
 import { useFile, selectionFromLines, type FileSelection } from "@/workspaces/files/model"
 import { useLanguage } from "@/runtime/i18n/language"
@@ -152,7 +153,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     if (!sessionID) return
 
     try {
-      await (platform.writeClipboardText?.(sessionID) ?? navigator.clipboard.writeText(sessionID))
+      await (platform.writeClipboardText?.(sessionID) ?? writeClipboard(sessionID))
       showToast({
         variant: "success",
         icon: "circle-check",
@@ -174,7 +175,7 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     if (!projectID) return
 
     try {
-      await (platform.writeClipboardText?.(projectID) ?? navigator.clipboard.writeText(projectID))
+      await (platform.writeClipboardText?.(projectID) ?? writeClipboard(projectID))
       showToast({
         variant: "success",
         icon: "circle-check",

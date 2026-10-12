@@ -10,7 +10,7 @@ const randomDescriptor = Object.getOwnPropertyDescriptor(Math, "random")
 const setCrypto = (value: Partial<Crypto>) => {
   Object.defineProperty(globalThis, "crypto", {
     configurable: true,
-    value: value as Crypto,
+    value,
   })
 }
 
@@ -38,6 +38,7 @@ afterEach(() => {
   }
 
   if (!secureDescriptor) {
+    // SAFETY: `isSecureContext` has no optional declared form, but the runtime binding may be absent; only its presence is probed.
     delete (globalThis as { isSecureContext?: boolean }).isSecureContext
   }
 

@@ -13,6 +13,7 @@ import {
 import { createStore, produce, type Store } from "solid-js/store"
 import type { Schema } from "effect"
 import { useDialog } from "@opencode/ui/context/dialog"
+import { writeClipboard } from "@opencode/ui/clipboard"
 import { base64Encode } from "@opencode/util/encode"
 import {
   Panel,
@@ -217,7 +218,11 @@ export function createHostApis() {
       },
     }),
     system: () => ({
-      copy: (text) => platform.writeClipboardText?.(text) ?? navigator.clipboard.writeText(text),
+      async copy(text) {
+        if (platform.writeClipboardText) return platform.writeClipboardText(text)
+
+        if (!(await writeClipboard(text))) throw new Error("Clipboard write failed")
+      },
       async save(file) {
         if (platform.saveFile) return platform.saveFile({ defaultPath: file.name }, file.content)
         const url = URL.createObjectURL(new Blob([file.content], { type: "application/octet-stream" }))

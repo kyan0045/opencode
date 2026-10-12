@@ -2,6 +2,7 @@ import { type ComponentProps, createMemo, onMount, Show, splitProps } from "soli
 import { createStore } from "solid-js/store"
 import { Card, CardDescription } from "@opencode/ui/card"
 import { Collapsible } from "@opencode/ui/collapsible"
+import { writeClipboard } from "@opencode/ui/clipboard"
 import { Icon } from "@opencode/ui/icon"
 import { IconButton } from "@opencode/ui/icon-button"
 import { Tooltip } from "@opencode/ui/tooltip"
@@ -113,7 +114,8 @@ export function ToolErrorCard(props: ToolErrorCardProps) {
     const text = cleaned()
 
     if (!text) return
-    await navigator.clipboard.writeText(text)
+
+    if (!(await writeClipboard(text))) return
     setState("copied", true)
     setTimeout(() => setState("copied", false), 2000)
   }

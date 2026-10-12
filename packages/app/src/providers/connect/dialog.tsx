@@ -1,5 +1,6 @@
 import { Button } from "@opencode/ui/button"
 import { Badge } from "@opencode/ui/badge"
+import { writeClipboard } from "@opencode/ui/clipboard"
 import { useDialog } from "@opencode/ui/context/dialog"
 import { Icon } from "@opencode/ui/icon"
 import { List } from "@opencode/ui/list"
@@ -578,10 +579,12 @@ function ProviderConnection(props: {
 
     if (!url) return
 
-    const copied = await Promise.resolve()
-      .then(() => (platform.writeClipboardText ? platform.writeClipboardText(url) : navigator.clipboard.writeText(url)))
-      .then(() => true)
-      .catch(() => false)
+    const copied = platform.writeClipboardText
+      ? await platform.writeClipboardText(url).then(
+          () => true,
+          () => false,
+        )
+      : await writeClipboard(url)
 
     if (controller.authorization()?.url !== url) return
     setState({ copied, copyFailed: !copied })
