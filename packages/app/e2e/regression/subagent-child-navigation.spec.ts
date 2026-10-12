@@ -3,7 +3,7 @@ import { timelinePresets } from "@opencode/session-ui/timeline/detail"
 import { expect, test, type Locator, type Page } from "@playwright/test"
 import { expectPath, SERVER, sessionHref } from "../utils/app"
 import { currentSession } from "../utils/mock-server"
-import { assistantMessage, session, sessionID, setupTimeline, textPart, userMessage } from "../utils/timeline"
+import { assistantMessage, session, sessionID, setupTimeline, textPart, toolPart, userMessage } from "../utils/timeline"
 import { expectSessionTitle } from "../utils/waits"
 import { mockWorkspace } from "../utils/workspace"
 
@@ -110,6 +110,40 @@ test("navigates from a running subagent card and hides background controls in th
   await page.locator('[data-component="task-tool-card"]').click()
   await expect(page).toHaveURL(new RegExp(`/session/${runningChildID}$`))
   await expect(hint).toHaveCount(0)
+})
+
+test("opens a background subagent from Session details", async ({ page }) => {
+  const backgroundChildID = "ses_background_child"
+  await setupTimeline(page, {
+    sessions: [
+      session(),
+      session({ id: backgroundChildID, parentID: sessionID, title: "Background subagent child" }),
+    ],
+    messages: [
+      userMessage(),
+      assistantMessage([
+        toolPart(
+          "call_background_subagent",
+          "subagent",
+          "completed",
+          { description: taskDescription, agent: "explore", prompt: "Inspect the delegated work." },
+          { metadata: { sessionID: backgroundChildID, status: "running" } },
+        ),
+      ]),
+    ],
+    sessionStatus: { [sessionID]: { type: "busy" }, [backgroundChildID]: { type: "busy" } },
+  })
+
+  await page.getByRole("button", { name: "Session details", exact: true }).click()
+  await page.getByRole("button", { name: "1 background task running", exact: true }).click()
+
+  const link = page.locator(
+    `[data-component="session-background-list"] a[href="${sessionHref(backgroundChildID)}"]`,
+  )
+
+  await expect(link).toBeVisible()
+  await link.click()
+  await expect(page).toHaveURL(sessionHref(backgroundChildID))
 })
 
 test("opens a directly linked nested subagent in its root session tab", async ({ page }) => {
