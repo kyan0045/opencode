@@ -203,6 +203,29 @@ const hashesOf = (data: MessageRow["data"] | InboxRow["payload"]) => {
   return hashes
 }
 
+function storedPartRefs(pending: Pending, part: Part): Part {
+  if (part.type !== "tool" || (part.state.status !== "completed" && part.state.status !== "error")) return part
+  const content = part.state.content
+  if (!content?.some((item) => item.type === "file" && DATA_URI.test(item.uri))) return part
+  return { ...part, state: { ...part.state, content: map(content, (item) => toolRef(pending, item)) } }
+}
+
+/**
+ * Moves a stored row's inline media into blobs whatever the flag says, for offline backfills. Returns the row to
+ * store (the same object when nothing moved), the blobs to insert, and every hash the row then names.
+ */
+export function split(data: MessageRow["data"] | InboxRow["payload"]) {
+  const pending: Pending = new Map()
+  const stored =
+    "files" in data && data.files?.some((file) => !isFileRef(file))
+      ? { ...data, files: data.files.map((file) => fileRef(pending, file)) }
+      : "content" in data
+        ? { ...data, content: data.content.map((part) => storedPartRefs(pending, part)) }
+        : data
+  const result = pending.size > 0 ? stored : data
+  return { data: result, moved: pending.size > 0, blobs: [...pending.values()], hashes: hashesOf(result) }
+}
+
 /** Records that `owner` references each blob its stored row names, so release keeps them until it lets go. */
 export const recordRefs = Effect.fnUntraced(function* (
   db: DatabaseService,
