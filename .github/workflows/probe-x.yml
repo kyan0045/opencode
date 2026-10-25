@@ -1,4 +1,4 @@
-name: release
+name: probe-x
 on:
   push:
     branches: [release-split-probe]
